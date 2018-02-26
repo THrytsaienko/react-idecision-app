@@ -3,10 +3,12 @@ import AddOption from './AddOption';
 import Options from './Options';
 import Action from './Action';
 import Header from './Header';
+import OptionModal from './OptionModal';
 
 export default class IndecisionApp extends React.Component {
     state = {
-        options: []
+        options: [],
+        selectedOption: undefined
     };
     handleDeleteOptions = () => {
         this.setState(() => ({ options: [] }));
@@ -21,10 +23,15 @@ export default class IndecisionApp extends React.Component {
             options: prevState.options.filter((option) => optionToRemove !== option)
         }));
     }
+    handleClearSelectedOption = () => {
+        this.setState(() => ({
+            selectedOption: undefined
+        }));
+    }
     handlePick = () => {
         let randomNumber = Math.floor(Math.random() * this.state.options.length);
-        const item = this.state.options[randomNumber];
-        alert(item);
+        const option = this.state.options[randomNumber];
+        this.setState(() => ({ selectedOption: option }));
     }
     handleAddOption = (option) => {
         if (!option) {
@@ -88,24 +95,25 @@ export default class IndecisionApp extends React.Component {
     // }
 
     componentDidMount() {
-        const json = localStorage.getItem('options');
-        const options = JSON.parse(json);
-    }
-    componentDidUpdate(prevProps, prevState) {
         try {
-            if (prevState.options.length !== this.state.options.length) {
-                const json = JSON.stringify(this.state.options);
-                localStorage.setItem('options', json);
+            const json = localStorage.getItem('options');
+            const options = JSON.parse(json);
 
-                if (options) {
-                    this.setState(() => ({ options }));
-                }
+            if (options) {
+                this.setState(() => ({ options }));
             }
         } catch (e) {
+            // Do nothing at all
+        }
+    }
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.options.length !== this.state.options.length) {
+            const json = JSON.stringify(this.state.options);
+            localStorage.setItem('options', json);
         }
     }
     componentWillUnmount() {
-
+        console.log('componentWillUnmount');
     }
     render() {
         // const title = 'Indecision'; // delete because Header.defaultProps were added
@@ -126,6 +134,10 @@ export default class IndecisionApp extends React.Component {
                 />
                 <AddOption
                     handleAddOption={this.handleAddOption}
+                />
+                <OptionModal
+                    selectedOption={this.state.selectedOption}
+                    handleClearSelectedOption={this.handleClearSelectedOption}
                 />
             </div>
         );
